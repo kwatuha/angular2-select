@@ -1,10 +1,12 @@
-import {Component, Input, OnChanges, OnInit, Output, EventEmitter, ExistingProvider, ViewChild, ViewEncapsulation, forwardRef} from '@angular/core';
-import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+import { Component, Input, OnChanges, OnInit, Output, EventEmitter, ExistingProvider,
+     ViewChild, ViewEncapsulation, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
-import {DEFAULT_STYLES} from './style';
-import {SelectDropdownComponent} from './select-dropdown.component';
+import { DEFAULT_STYLES } from './style';
+import { SelectDropdownComponent } from './select-dropdown.component';
 
-export const SELECT_VALUE_ACCESSOR: ExistingProvider = { provide: NG_VALUE_ACCESSOR,
+export const SELECT_VALUE_ACCESSOR: ExistingProvider = {
+    provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => SelectComponent),
     multi: true
 };
@@ -98,17 +100,29 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
     private S2: string = 'select2';
     private S2_CONTAINER: string = this.S2 + '-container';
     private S2_SELECTION: string = this.S2 + '-selection';
+    private KEYS: any = {
+        BACKSPACE: 8,
+        TAB: 9,
+        ENTER: 13,
+        ESC: 27,
+        SPACE: 32,
+        UP: 38,
+        DOWN: 40
+    };
 
     @Input() options: Array<any>;
     @Input() theme: string;
+    @Input() searchFunction: Function;
     @Input() multiple: boolean;
     @Input() placeholder: string;
     @Input() allowClear: boolean;
+    @Input() resolveFuncation: Function;
 
     @Output() opened: EventEmitter<null> = new EventEmitter<null>();
     @Output() closed: EventEmitter<null> = new EventEmitter<null>();
     @Output() selected: EventEmitter<any> = new EventEmitter<any>();
     @Output() deselected: EventEmitter<any> = new EventEmitter<any>();
+    @Output() searchInputText: EventEmitter<any> = new EventEmitter<any>();
 
     @ViewChild('container') container: any;
     @ViewChild('selectionSpan') selectionSpan: any;
@@ -132,8 +146,8 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
     selection: Array<any> = [];
     value: Array<string> = [];
 
-    onChange = (_: any) => {};
-    onTouched = () => {};
+    onChange = (_: any) => { };
+    onTouched = () => { };
 
     /***************************************************************************
      * Event handlers.
@@ -202,8 +216,7 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
             setTimeout(() => {
                 this.handleInput(event);
             }, 100);
-        }
-        else {
+        } else {
             this.handleInput(event);
         }
     }
@@ -304,8 +317,7 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
         if (this.multiple) {
             this.searchInput.nativeElement.value = '';
             this.searchInput.nativeElement.focus();
-        }
-        else {
+        } else {
             this.focus();
         }
     }
@@ -350,7 +362,9 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
 
     clear() {
         for (let item in this.optionsDict) {
-            this.optionsDict[item].selected = false;
+            if (this.optionsDict.hasOwnProperty(item)) {
+                this.optionsDict[item].selected = false;
+            }
         }
         this.selection = [];
         this.value = [];
@@ -362,8 +376,7 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
     getOutputValue(): any {
         if (this.multiple) {
             return this.value.length === 0 ? '' : this.value.slice(0);
-        }
-        else {
+        } else {
             return this.value.length === 0 ? '' : this.value[0];
         }
     }
@@ -378,16 +391,17 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
             value = this.multiple ? [] : '';
         }
 
-        for (let item in this.optionsDict) {
-            this.optionsDict[item].selected = false;
-        }
+            for (let item in this.optionsDict) {
+                if (this.optionsDict.hasOwnProperty(item)) {
+                    this.optionsDict[item].selected = false;
+                }
+            }
 
         if (this.multiple) {
             for (let item of value) {
                 this.optionsDict[item].selected = true;
             }
-        }
-        else if (value !== '') {
+        } else if (value !== '') {
             this.optionsDict[value].selected = true;
         }
 
@@ -402,19 +416,6 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
         this.onTouched = fn;
     }
 
-    /***************************************************************************
-     * Keys.
-     **************************************************************************/
-
-    private KEYS: any = {
-        BACKSPACE: 8,
-        TAB: 9,
-        ENTER: 13,
-        ESC: 27,
-        SPACE: 32,
-        UP: 38,
-        DOWN: 40
-    };
 
     handleKeyDown(event: any) {
 
@@ -429,6 +430,8 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
     }
 
     handleInput(event: any) {
+        let value = event.target.value;
+         this.searchInputText.emit(value);
         this.dropdown.filter(event.target.value);
     }
 
@@ -444,29 +447,23 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
                     this.onToggleSelect(hl.value);
                 }
             }
-        }
-        else if (key === this.KEYS.BACKSPACE) {
+        } else if (key === this.KEYS.BACKSPACE) {
             if (this.searchInput.nativeElement.value === '') {
                 this.popSelect();
             }
-        }
-        else if (key === this.KEYS.UP) {
+        } else if (key === this.KEYS.UP) {
             if (typeof this.dropdown === 'undefined') {
                 this.open();
-            }
-            else {
+            } else {
                 this.dropdown.highlightPrevious();
             }
-        }
-        else if (key === this.KEYS.DOWN) {
+        } else if (key === this.KEYS.DOWN) {
             if (typeof this.dropdown === 'undefined') {
                 this.open();
-            }
-            else {
+            } else {
                 this.dropdown.highlightNext();
             }
-        }
-        else if (key === this.KEYS.ESC) {
+        } else if (key === this.KEYS.ESC) {
             this.close(true);
         }
     }
@@ -479,8 +476,7 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
         this.hasFocus = true;
         if (this.multiple) {
             this.searchInput.nativeElement.focus();
-        }
-        else {
+        } else {
             this.selectionSpan.nativeElement.focus();
         }
     }
@@ -540,13 +536,11 @@ export class SelectComponent implements ControlValueAccessor, OnInit, OnChanges 
 
         if (typeof this.searchInput === 'undefined') {
             width = 200;
-        }
-        else if (this.showPlaceholder() &&
-                 this.searchInput.nativeElement.value.length === 0 ) {
+        } else if (this.showPlaceholder() &&
+            this.searchInput.nativeElement.value.length === 0) {
 
             width = 10 + 10 * this.placeholder.length;
-        }
-        else {
+        } else {
             width = 10 + 10 * this.searchInput.nativeElement.value.length;
         }
 
