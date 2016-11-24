@@ -1,14 +1,18 @@
 {
   "name": "angular2-select",
-  "version": "1.0.0-alpha.12",
-  "description": "Select component for Angular 2 (based on select2 JQuery plugin).",
+  "version": "1.0.0-alpha.13",
+  "description": "Select component for Angular 2 (based on basvandenberg).",
   "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "scripts": {
+    "build": "gulp npmbuild",
+    "postinstall": "npm run build"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/basvandenberg/angular2-select.git"
+    "url": "git+https://github.com/AMPATH/angular2-select.git"
   },
   "keywords": [
     "angular",
@@ -21,9 +25,9 @@
   "author": "Bastiaan van den Berg <b.a.vandenberg@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/basvandenberg/angular2-select/issues"
+    "url": "https://github.com/AMPATH/angular2-select/issues"
   },
-  "homepage": "https://github.com/basvandenberg/angular2-select#readme",
+  "homepage": "https://github.com/AMPATH/angular2-select#readme",
   "devDependencies": {
     "@angular/common": "^2.1.0",
     "@angular/compiler": "^2.1.0",
